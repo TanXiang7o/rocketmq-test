@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
   push:
-    branches: [master, develop]
+    branches: [master, develop, main]
 jobs:
   calculate-coverage:
     runs-on: ubuntu-latest
