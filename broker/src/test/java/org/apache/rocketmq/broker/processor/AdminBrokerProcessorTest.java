@@ -1211,8 +1211,7 @@ public class AdminBrokerProcessorTest {
 
 
 
-    private ResetOffsetRequestHeader createRequestHeader
-            (String topic,String group,long timestamp,boolean force,long offset,int queueId) {
+    private ResetOffsetRequestHeader createRequestHeader(String topic,String group,long timestamp,boolean force,long offset,int queueId) {
         ResetOffsetRequestHeader requestHeader = new ResetOffsetRequestHeader();
         requestHeader.setTopic(topic);
         requestHeader.setGroup(group);
