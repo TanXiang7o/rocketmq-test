@@ -1236,7 +1236,7 @@ public class AdminBrokerProcessorTest {
 
     private RemotingCommand buildCreateTopicListRequest(List<String> topicList) {
         List<TopicConfig> topicConfigList = new ArrayList<>();
-        for (String topic:topicList){
+        for (String topic:topicList) {
             TopicConfig topicConfig = new TopicConfig(topic);
             topicConfig.setReadQueueNums(8);
             topicConfig.setWriteQueueNums(8);
