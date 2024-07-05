@@ -67,7 +67,9 @@ import org.apache.rocketmq.remoting.protocol.ResponseCode;
 import org.apache.rocketmq.remoting.protocol.body.AclInfo;
 import org.apache.rocketmq.remoting.protocol.body.CreateTopicListRequestBody;
 import org.apache.rocketmq.remoting.protocol.body.GroupList;
+import org.apache.rocketmq.remoting.protocol.body.HARuntimeInfo;
 import org.apache.rocketmq.remoting.protocol.body.LockBatchRequestBody;
+import org.apache.rocketmq.remoting.protocol.body.QueryCorrectionOffsetBody;
 import org.apache.rocketmq.remoting.protocol.body.UnlockBatchRequestBody;
 import org.apache.rocketmq.remoting.protocol.body.UserInfo;
 import org.apache.rocketmq.remoting.protocol.header.CreateAclRequestHeader;
@@ -76,6 +78,7 @@ import org.apache.rocketmq.remoting.protocol.header.CreateUserRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.DeleteAclRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.DeleteTopicRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.DeleteUserRequestHeader;
+import org.apache.rocketmq.remoting.protocol.header.ExchangeHAInfoResponseHeader;
 import org.apache.rocketmq.remoting.protocol.header.GetAclRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.GetAllTopicConfigResponseHeader;
 import org.apache.rocketmq.remoting.protocol.header.GetConsumerRunningInfoRequestHeader;
@@ -87,9 +90,12 @@ import org.apache.rocketmq.remoting.protocol.header.GetTopicConfigRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.GetUserRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.ListAclsRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.ListUsersRequestHeader;
+import org.apache.rocketmq.remoting.protocol.header.NotifyMinBrokerIdChangeRequestHeader;
+import org.apache.rocketmq.remoting.protocol.header.QueryCorrectionOffsetHeader;
 import org.apache.rocketmq.remoting.protocol.header.QuerySubscriptionByConsumerRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.QueryTopicConsumeByWhoRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.QueryTopicsByConsumerRequestHeader;
+import org.apache.rocketmq.remoting.protocol.header.ResetMasterFlushOffsetHeader;
 import org.apache.rocketmq.remoting.protocol.header.ResetOffsetRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.ResumeCheckHalfMessageRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.SearchOffsetRequestHeader;
@@ -1173,7 +1179,7 @@ public class AdminBrokerProcessorTest {
 
     @Test
     public void testCleanUnusedTopic() throws RemotingCommandException {
-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.DELETE_EXPIRED_COMMITLOG, null);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.CLEAN_UNUSED_TOPIC, null);
         RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);
         assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
     }
@@ -1209,7 +1215,91 @@ public class AdminBrokerProcessorTest {
         assertThat(response.getCode()).isEqualTo(ResponseCode.CONSUME_MSG_TIMEOUT);
     }
 
+    @Test
+    public void testQueryCorrectionOffset() throws RemotingCommandException {
+        Map<Integer, Long> correctionOffsetMap = new HashMap<>();
+        correctionOffsetMap.put(0, 100L);
+        correctionOffsetMap.put(1, 200L);
+        Map<Integer, Long> compareOffsetMap = new HashMap<>();
+        compareOffsetMap.put(0, 80L);
+        compareOffsetMap.put(1, 300L);
+        when(brokerController.getConsumerOffsetManager()).thenReturn(consumerOffsetManager);
+        when(consumerOffsetManager.queryMinOffsetInAllGroup(anyString(),anyString())).thenReturn(correctionOffsetMap);
+        when(consumerOffsetManager.queryOffset(anyString(),anyString())).thenReturn(compareOffsetMap);
+        QueryCorrectionOffsetHeader queryCorrectionOffsetHeader = new QueryCorrectionOffsetHeader();
+        queryCorrectionOffsetHeader.setTopic("topic");
+        queryCorrectionOffsetHeader.setCompareGroup("group");
+        queryCorrectionOffsetHeader.setFilterGroups("");
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.QUERY_CORRECTION_OFFSET, queryCorrectionOffsetHeader);
+        request.makeCustomHeaderToNet();
+        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+        QueryCorrectionOffsetBody body = RemotingSerializable.decode(response.getBody(), QueryCorrectionOffsetBody.class);
+        Map<Integer, Long> correctionOffsets = body.getCorrectionOffsets();
+        assertThat(correctionOffsets.get(0)).isEqualTo(Long.MAX_VALUE);
+        assertThat(correctionOffsets.get(1)).isEqualTo(200L);
+    }
 
+    @Test
+    public void testNotifyMinBrokerIdChange() throws RemotingCommandException {
+        NotifyMinBrokerIdChangeRequestHeader requestHeader = new NotifyMinBrokerIdChangeRequestHeader();
+        requestHeader.setMinBrokerId(1L);
+        requestHeader.setMinBrokerAddr("127.0.0.1:10912");
+        requestHeader.setOfflineBrokerAddr("127.0.0.1:10911");
+        requestHeader.setHaBrokerAddr("");
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_MIN_BROKER_ID_CHANGE, requestHeader);
+        request.makeCustomHeaderToNet();
+        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+    }
+
+    @Test
+    public void testUpdateBrokerHaInfo() throws RemotingCommandException {
+        ExchangeHAInfoResponseHeader requestHeader = new ExchangeHAInfoResponseHeader();
+        requestHeader.setMasterAddress("127.0.0.1:10911");
+        requestHeader.setMasterFlushOffset(0L);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.EXCHANGE_BROKER_HA_INFO, requestHeader);
+        request.makeCustomHeaderToNet();
+        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+
+        when(brokerController.getMessageStore()).thenReturn(messageStore);
+        requestHeader.setMasterHaAddress("127.0.0.1:10912");
+        request = RemotingCommand.createRequestCommand(RequestCode.EXCHANGE_BROKER_HA_INFO, requestHeader);
+        request.makeCustomHeaderToNet();
+        response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+
+        when(messageStore.getMasterFlushedOffset()).thenReturn(0L);
+        when(messageStoreConfig.isSyncMasterFlushOffsetWhenStartup()).thenReturn(true);
+        response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+    }
+
+    @Test
+    public void testGetBrokerHaStatus() throws RemotingCommandException {
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_BROKER_HA_STATUS,null);
+        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SYSTEM_ERROR);
+
+        when(brokerController.getMessageStore()).thenReturn(messageStore);
+        when(messageStore.getHARuntimeInfo()).thenReturn(new HARuntimeInfo());
+        response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+    }
+
+    @Test
+    public void testResetMasterFlushOffset() throws RemotingCommandException {
+        ResetMasterFlushOffsetHeader requestHeader = new ResetMasterFlushOffsetHeader();
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.RESET_MASTER_FLUSH_OFFSET,requestHeader);
+        RemotingCommand response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+
+        requestHeader.setMasterFlushOffset(0L);
+        request.makeCustomHeaderToNet();
+        response = adminBrokerProcessor.processRequest(handlerContext, request);
+        assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
+    }
 
     private ResetOffsetRequestHeader createRequestHeader(String topic,String group,long timestamp,boolean force,long offset,int queueId) {
         ResetOffsetRequestHeader requestHeader = new ResetOffsetRequestHeader();
