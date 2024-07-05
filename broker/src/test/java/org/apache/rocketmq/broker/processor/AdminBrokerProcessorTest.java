@@ -1271,7 +1271,6 @@ public class AdminBrokerProcessorTest {
         assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
 
         when(messageStore.getMasterFlushedOffset()).thenReturn(0L);
-        when(messageStoreConfig.isSyncMasterFlushOffsetWhenStartup()).thenReturn(true);
         response = adminBrokerProcessor.processRequest(handlerContext, request);
         assertThat(response.getCode()).isEqualTo(ResponseCode.SUCCESS);
     }
