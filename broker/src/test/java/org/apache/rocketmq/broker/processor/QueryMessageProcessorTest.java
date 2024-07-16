@@ -69,7 +69,7 @@ public class QueryMessageProcessorTest {
     private ChannelFuture channelFuture;
 
     @Before
-    public void init(){
+    public void init() {
         when(handlerContext.channel()).thenReturn(channel);
         queryMessageProcessor = new QueryMessageProcessor(brokerController);
         when(brokerController.getMessageStore()).thenReturn(messageStore);
