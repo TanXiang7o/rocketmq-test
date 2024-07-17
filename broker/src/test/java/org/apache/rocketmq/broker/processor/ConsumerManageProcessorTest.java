@@ -263,9 +263,9 @@ public class ConsumerManageProcessorTest {
         return request;
     }
 
-    public LogicQueueMappingItem createLogicQueueMappingItem(String Bname, int queueId, long startOffset, long logicOffset) {
+    public LogicQueueMappingItem createLogicQueueMappingItem(String BrokerName, int queueId, long startOffset, long logicOffset) {
         LogicQueueMappingItem item = new LogicQueueMappingItem();
-        item.setBname(Bname);
+        item.setBname(BrokerName);
         item.setQueueId(queueId);
         item.setStartOffset(startOffset);
         item.setLogicOffset(logicOffset);
