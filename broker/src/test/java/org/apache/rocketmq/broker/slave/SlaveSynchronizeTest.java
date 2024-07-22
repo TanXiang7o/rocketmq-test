@@ -110,22 +110,21 @@ public class SlaveSynchronizeTest {
         when(brokerController.getMessageStore()).thenReturn(messageStore);
         when(brokerController.getTimerMessageStore()).thenReturn(timerMessageStore);
         when(brokerController.getTimerCheckpoint()).thenReturn(timerCheckpoint);
-        DataVersion dataVersion = new DataVersion();
-        dataVersion.setStateVersion(0L);
-        when(topicConfigManager.getDataVersion()).thenReturn(dataVersion);
+        when(topicConfigManager.getDataVersion()).thenReturn(new DataVersion());
         when(topicConfigManager.getTopicConfigTable()).thenReturn(new ConcurrentHashMap<>());
         when(brokerController.getConsumerOffsetManager()).thenReturn(consumerOffsetManager);
         when(consumerOffsetManager.getOffsetTable()).thenReturn(new ConcurrentHashMap<>());
-        when(consumerOffsetManager.getDataVersion()).thenReturn(dataVersion);
-        when(subscriptionGroupManager.getDataVersion()).thenReturn(dataVersion);
+        when(consumerOffsetManager.getDataVersion()).thenReturn(new DataVersion());
+        when(subscriptionGroupManager.getDataVersion()).thenReturn(new DataVersion());
+        when(subscriptionGroupManager.getSubscriptionGroupTable()).thenReturn(new ConcurrentHashMap<>());
         when(queryAssignmentProcessor.getMessageRequestModeManager()).thenReturn(messageRequestModeManager);
         when(messageRequestModeManager.getMessageRequestModeMap()).thenReturn(new ConcurrentHashMap<>());
         when(messageStoreConfig.isTimerWheelEnable()).thenReturn(true);
         when(messageStore.getTimerMessageStore()).thenReturn(timerMessageStore);
         when(timerMessageStore.isShouldRunningDequeue()).thenReturn(false);
         when(timerMessageStore.getTimerMetrics()).thenReturn(timerMetrics);
-        when(timerMetrics.getDataVersion()).thenReturn(dataVersion);
-        when(timerCheckpoint.getDataVersion()).thenReturn(dataVersion);
+        when(timerMetrics.getDataVersion()).thenReturn(new DataVersion());
+        when(timerCheckpoint.getDataVersion()).thenReturn(new DataVersion());
         slaveSynchronize = new SlaveSynchronize(brokerController);
         slaveSynchronize.setMasterAddr("127.0.0.1:10911");
     }
