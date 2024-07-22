@@ -118,7 +118,6 @@ public class SlaveSynchronizeTest {
         when(consumerOffsetManager.getOffsetTable()).thenReturn(new ConcurrentHashMap<>());
         when(consumerOffsetManager.getDataVersion()).thenReturn(dataVersion);
         when(subscriptionGroupManager.getDataVersion()).thenReturn(dataVersion);
-        when(subscriptionGroupManager.getSubscriptionGroupTable()).thenReturn(new ConcurrentHashMap<>());
         when(queryAssignmentProcessor.getMessageRequestModeManager()).thenReturn(messageRequestModeManager);
         when(messageRequestModeManager.getMessageRequestModeMap()).thenReturn(new ConcurrentHashMap<>());
         when(messageStoreConfig.isTimerWheelEnable()).thenReturn(true);
