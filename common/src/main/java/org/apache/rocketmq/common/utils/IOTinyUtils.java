@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,19 +87,9 @@ public class IOTinyUtils {
             throw new RuntimeException("failed to create target file.");
         }
 
-        FileChannel sc = null;
-        FileChannel tc = null;
-        try {
-            tc = new FileOutputStream(tf).getChannel();
-            sc = new FileInputStream(sf).getChannel();
+        try (FileChannel sc = new FileInputStream(sf).getChannel();
+             FileChannel tc = new FileOutputStream(tf).getChannel()) {
             sc.transferTo(0, sc.size(), tc);
-        } finally {
-            if (null != sc) {
-                sc.close();
-            }
-            if (null != tc) {
-                tc.close();
-            }
         }
     }
 
@@ -145,14 +136,8 @@ public class IOTinyUtils {
     }
 
     public static void writeStringToFile(File file, String data, String encoding) throws IOException {
-        OutputStream os = null;
-        try {
-            os = new FileOutputStream(file);
+        try(OutputStream os = Files.newOutputStream(file.toPath())) {
             os.write(data.getBytes(encoding));
-        } finally {
-            if (null != os) {
-                os.close();
-            }
         }
     }
 }

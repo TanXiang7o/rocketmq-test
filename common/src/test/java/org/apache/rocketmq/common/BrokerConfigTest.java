@@ -41,9 +41,9 @@ public class BrokerConfigTest {
         assertThat(brokerConfig.getBrokerClusterName()).isEqualTo("DefaultCluster");
         assertThat(brokerConfig.getNamesrvAddr()).isEqualTo("127.0.0.1:9876");
         assertThat(brokerConfig.getMsgTraceTopicName()).isEqualTo("RMQ_SYS_TRACE_TOPIC4");
-        assertThat(brokerConfig.getBrokerId()).isEqualTo(0);
+        assertThat(brokerConfig.getBrokerId()).isZero();
         assertThat(brokerConfig.getBrokerName()).isEqualTo("broker-a");
-        assertThat(brokerConfig.isAutoCreateTopicEnable()).isEqualTo(false);
-        assertThat(brokerConfig.isAutoDeleteUnusedStats()).isEqualTo(true);
+        assertThat(brokerConfig.isAutoCreateTopicEnable()).isFalse();
+        assertThat(brokerConfig.isAutoDeleteUnusedStats()).isTrue();
     }
 }

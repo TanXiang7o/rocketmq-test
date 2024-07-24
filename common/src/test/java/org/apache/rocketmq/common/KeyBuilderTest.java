@@ -56,8 +56,8 @@ public class KeyBuilderTest {
     @Test
     public void testIsPopRetryTopicV2() {
         String popRetryTopic = KeyBuilder.buildPopRetryTopicV2(topic, group);
-        assertThat(KeyBuilder.isPopRetryTopicV2(popRetryTopic)).isEqualTo(true);
+        assertThat(KeyBuilder.isPopRetryTopicV2(popRetryTopic)).isTrue();
         String popRetryTopicV1 = KeyBuilder.buildPopRetryTopicV1(topic, group);
-        assertThat(KeyBuilder.isPopRetryTopicV2(popRetryTopicV1)).isEqualTo(false);
+        assertThat(KeyBuilder.isPopRetryTopicV2(popRetryTopicV1)).isFalse();
     }
 }
