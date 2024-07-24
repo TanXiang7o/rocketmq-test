@@ -136,7 +136,7 @@ public class IOTinyUtils {
     }
 
     public static void writeStringToFile(File file, String data, String encoding) throws IOException {
-        try(OutputStream os = Files.newOutputStream(file.toPath())) {
+        try (OutputStream os = Files.newOutputStream(file.toPath())) {
             os.write(data.getBytes(encoding));
         }
     }
