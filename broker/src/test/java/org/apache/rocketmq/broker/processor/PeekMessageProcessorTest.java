@@ -49,7 +49,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -106,7 +110,7 @@ public class PeekMessageProcessorTest {
         ByteBuffer bb = ByteBuffer.allocate(64);
         bb.putLong(MessageDecoder.MESSAGE_STORE_TIMESTAMP_POSITION, System.currentTimeMillis());
         SelectMappedBufferResult mappedBufferResult1 = new SelectMappedBufferResult(0, bb, 64, null);
-        for (int i = 0; i < 10;i++){
+        for (int i = 0; i < 10;i++) {
             getMessageResult.addMessage(mappedBufferResult1);
         }
         when(messageStore.getMessage(anyString(),anyString(),anyInt(),anyLong(),anyInt(),any())).thenReturn(getMessageResult);
