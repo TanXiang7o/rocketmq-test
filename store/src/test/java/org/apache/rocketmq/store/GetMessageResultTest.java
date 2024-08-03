@@ -39,5 +39,8 @@ public class GetMessageResultTest {
         Assert.assertEquals(getMessageResult.getMessageCount(), 4);
         Assert.assertEquals(getMessageResult.getMsgCount4Commercial(), 1 + 2 + 4);
         Assert.assertEquals(getMessageResult.getBufferTotalSize(), (1 + 2 + 4) * 4 * 1024);
+
+
+
     }
 }

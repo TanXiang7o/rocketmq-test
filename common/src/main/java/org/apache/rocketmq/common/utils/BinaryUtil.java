@@ -18,6 +18,7 @@
 package org.apache.rocketmq.common.utils;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Hex;
@@ -35,7 +36,7 @@ public class BinaryUtil {
     }
 
     public static String generateMd5(String bodyStr) {
-        byte[] bytes = calculateMd5(bodyStr.getBytes(Charset.forName("UTF-8")));
+        byte[] bytes = calculateMd5(bodyStr.getBytes(StandardCharsets.UTF_8));
         return Hex.encodeHexString(bytes, false);
     }
 

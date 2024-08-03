@@ -134,7 +134,7 @@ public class PullMessageProcessorTest {
     public void testProcessRequest_Found() throws RemotingCommandException {
         GetMessageResult getMessageResult = createGetMessageResult();
         when(messageStore.getMessageAsync(anyString(), anyString(), anyInt(), anyLong(), anyInt(), any(ExpressionMessageFilter.class))).thenReturn(CompletableFuture.completedFuture(getMessageResult));
-
+        
         final RemotingCommand request = createPullMsgCommand(RequestCode.PULL_MESSAGE);
         pullMessageProcessor.processRequest(handlerContext, request);
         RemotingCommand response = embeddedChannel.readOutbound();
